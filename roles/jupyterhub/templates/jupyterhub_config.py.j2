@@ -36,5 +36,5 @@ c.JupyterHub.load_roles = [
 ]
 
 # === Authentication (PAM — Linux system users) ===
-c.Authenticator.admin_users = set()
+c.Authenticator.allow_all = True
 c.LocalAuthenticator.create_system_users = False

@@ -109,25 +109,25 @@
     - restart jupyterhub
 
 # ============================================================
-# 8. R kernel (optional — reuses RStudio conda env)
+# 8. R kernel (optional — independent from RStudio env)
 # ============================================================
-- name: Check if R conda env exists
-  ansible.builtin.stat:
-    path: "{{ miniforge_install_dir }}/envs/{{ jupyterhub_r_conda_env }}/bin/R"
-  register: r_env_exists
+- name: Install R and IRkernel in JupyterHub conda env
+  ansible.builtin.command:
+    cmd: >
+      {{ miniforge_install_dir }}/bin/mamba install -y
+      -n {{ jupyterhub_conda_env }}
+      -c conda-forge
+      {{ jupyterhub_r_packages | join(' ') }}
+  register: r_install
+  changed_when: "'All requested packages already installed' not in r_install.stdout"
   when: jupyterhub_install_r_kernel
 
-- name: Install IRkernel in R conda env
+- name: Register R kernel for JupyterHub
   ansible.builtin.shell: |
-    {{ miniforge_install_dir }}/envs/{{ jupyterhub_r_conda_env }}/bin/R -e "
-      if (!requireNamespace('IRkernel', quietly = TRUE)) install.packages('IRkernel', repos='https://cloud.r-project.org')
-      IRkernel::installspec(user = FALSE, displayname = 'R ({{ jupyterhub_r_conda_env }})')
-    "
+    {{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}/bin/R -e "IRkernel::installspec(user = FALSE, displayname = 'R')"
   args:
     creates: /usr/local/share/jupyter/kernels/ir
-  when:
-    - jupyterhub_install_r_kernel
-    - r_env_exists.stat.exists | default(false)
+  when: jupyterhub_install_r_kernel
 
 # ============================================================
 # 9. Ensure JupyterHub is running

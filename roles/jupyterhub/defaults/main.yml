@@ -26,10 +26,13 @@ jupyterhub_idle_timeout: 3600
 jupyterhub_idle_cull_every: 300
 jupyterhub_idle_max_age: 0
 
-# === R kernel (optional, reuses RStudio conda env) ===
+# === R kernel (optional — independent conda packages) ===
 jupyterhub_install_r_kernel: false
-jupyterhub_r_conda_env: rstudio-server
+jupyterhub_r_packages:
+  - r-base
+  - r-irkernel
 
 # === Default spawner ===
+# === Default spawner ===
 jupyterhub_spawner: LocalProcessSpawner
-jupyterhub_default_url: /lab
+jupyterhub_spawner_default_interface: /lab    # /lab = JupyterLab, /tree = Notebook classique

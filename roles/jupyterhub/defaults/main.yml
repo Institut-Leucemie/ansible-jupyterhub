@@ -18,21 +18,19 @@ jupyterhub_conda_packages:
 jupyterhub_node_major: "22"
 
 # === Network ===
+# bind_url includes the base_url path — no need to set base_url separately
 jupyterhub_bind_url: "http://:8000"
-jupyterhub_base_url: /
 
 # === Idle culler ===
 jupyterhub_idle_timeout: 3600
 jupyterhub_idle_cull_every: 300
 jupyterhub_idle_max_age: 0
 
-# === R kernel (optional — independent conda packages) ===
+# === R kernel (optional — independent from RStudio env) ===
 jupyterhub_install_r_kernel: false
 jupyterhub_r_packages:
   - r-base
   - r-irkernel
 
-# === Default spawner ===
-# === Default spawner ===
-jupyterhub_spawner: jupyterhub.spawner.LocalProcessSpawner
-jupyterhub_spawner_default_interface: /lab  # /lab = JupyterLab, /tree = Notebook classique
+# === Spawner ===
+jupyterhub_spawner_default_interface: /lab    # /lab = JupyterLab, /tree = Notebook classique

@@ -1,0 +1,20 @@
+# Managed by Ansible (ansible-jupyterhub) — do not edit manually
+[Unit]
+Description=JupyterHub
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart={{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}/bin/jupyterhub \
+  -f {{ jupyterhub_install_dir }}/etc/jupyterhub_config.py
+WorkingDirectory={{ jupyterhub_state_dir }}
+Restart=on-failure
+RestartSec=10
+
+# Security hardening
+NoNewPrivileges=false
+ProtectSystem=false
+
+[Install]
+WantedBy=multi-user.target

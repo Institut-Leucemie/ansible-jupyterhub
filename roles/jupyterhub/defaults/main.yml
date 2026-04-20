@@ -1,0 +1,35 @@
+---
+# === Installation ===
+jupyterhub_install_dir: /opt/jupyterhub
+jupyterhub_state_dir: "{{ jupyterhub_install_dir }}/state"
+
+# === Miniforge / Conda ===
+miniforge_version: "26.1.1-3"
+miniforge_install_dir: /opt/miniforge
+jupyterhub_conda_env: jupyterhub
+jupyterhub_conda_packages:
+  - jupyterhub>=4.1
+  - jupyterlab>=4.3
+  - notebook
+  - jupyterhub-idle-culler
+  - ipykernel
+
+# === Node.js (for configurable-http-proxy) ===
+jupyterhub_node_major: "22"
+
+# === Network ===
+jupyterhub_bind_url: "http://:8000"
+jupyterhub_base_url: /
+
+# === Idle culler ===
+jupyterhub_idle_timeout: 3600
+jupyterhub_idle_cull_every: 300
+jupyterhub_idle_max_age: 0
+
+# === R kernel (optional, reuses RStudio conda env) ===
+jupyterhub_install_r_kernel: false
+jupyterhub_r_conda_env: rstudio-server
+
+# === Default spawner ===
+jupyterhub_spawner: LocalProcessSpawner
+jupyterhub_default_url: /lab

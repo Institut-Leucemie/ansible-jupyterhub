@@ -1,0 +1,15 @@
+---
+- name: Deploy JupyterHub
+  hosts: jupyterhub
+  become: true
+  pre_tasks:
+    - name: Wait for cloud-init to finish
+      ansible.builtin.raw: cloud-init status --wait
+      changed_when: false
+      failed_when: false
+
+    - name: Set timezone
+      community.general.timezone:
+        name: Europe/Paris
+  roles:
+    - jupyterhub

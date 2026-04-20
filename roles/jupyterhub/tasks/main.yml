@@ -1,0 +1,139 @@
+---
+# ============================================================
+# 1. Node.js LTS (for configurable-http-proxy)
+# ============================================================
+- name: Install Node.js prerequisites
+  ansible.builtin.apt:
+    name:
+      - curl
+      - gnupg
+    state: present
+
+- name: Add NodeSource GPG key
+  ansible.builtin.get_url:
+    url: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key"
+    dest: /usr/share/keyrings/nodesource.asc
+    mode: '0644'
+
+- name: Add NodeSource repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/nodesource.asc] https://deb.nodesource.com/node_{{ jupyterhub_node_major }}.x nodistro main"
+    state: present
+    filename: nodesource
+
+- name: Install Node.js
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: true
+
+# ============================================================
+# 2. configurable-http-proxy
+# ============================================================
+- name: Install configurable-http-proxy
+  ansible.builtin.command:
+    cmd: npm install -g configurable-http-proxy
+    creates: /usr/bin/configurable-http-proxy
+
+# ============================================================
+# 3. Miniforge (shared with RStudio if already installed)
+# ============================================================
+- name: Check if Miniforge is installed
+  ansible.builtin.stat:
+    path: "{{ miniforge_install_dir }}/bin/mamba"
+  register: miniforge_installed
+
+- name: Download Miniforge installer
+  ansible.builtin.get_url:
+    url: "https://github.com/conda-forge/miniforge/releases/download/{{ miniforge_version }}/Miniforge3-{{ miniforge_version }}-Linux-x86_64.sh"
+    dest: /tmp/miniforge.sh
+    mode: "0755"
+  when: not miniforge_installed.stat.exists
+
+- name: Install Miniforge
+  ansible.builtin.command:
+    cmd: /tmp/miniforge.sh -b -p {{ miniforge_install_dir }}
+  when: not miniforge_installed.stat.exists
+
+# ============================================================
+# 4. Conda environment with JupyterHub + JupyterLab
+# ============================================================
+- name: Create JupyterHub conda environment
+  ansible.builtin.command:
+    cmd: >
+      {{ miniforge_install_dir }}/bin/mamba create -y
+      -n {{ jupyterhub_conda_env }}
+      -c conda-forge
+      {{ jupyterhub_conda_packages | join(' ') }}
+    creates: "{{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}"
+
+# ============================================================
+# 5. Directory structure
+# ============================================================
+- name: Create JupyterHub directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ jupyterhub_install_dir }}"
+    - "{{ jupyterhub_install_dir }}/etc"
+    - "{{ jupyterhub_state_dir }}"
+
+# ============================================================
+# 6. Configuration
+# ============================================================
+- name: Deploy jupyterhub_config.py
+  ansible.builtin.template:
+    src: jupyterhub_config.py.j2
+    dest: "{{ jupyterhub_install_dir }}/etc/jupyterhub_config.py"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart jupyterhub
+
+# ============================================================
+# 7. Systemd service
+# ============================================================
+- name: Deploy JupyterHub systemd service
+  ansible.builtin.template:
+    src: jupyterhub.service.j2
+    dest: /etc/systemd/system/jupyterhub.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart jupyterhub
+
+# ============================================================
+# 8. R kernel (optional — reuses RStudio conda env)
+# ============================================================
+- name: Check if R conda env exists
+  ansible.builtin.stat:
+    path: "{{ miniforge_install_dir }}/envs/{{ jupyterhub_r_conda_env }}/bin/R"
+  register: r_env_exists
+  when: jupyterhub_install_r_kernel
+
+- name: Install IRkernel in R conda env
+  ansible.builtin.shell: |
+    {{ miniforge_install_dir }}/envs/{{ jupyterhub_r_conda_env }}/bin/R -e "
+      if (!requireNamespace('IRkernel', quietly = TRUE)) install.packages('IRkernel', repos='https://cloud.r-project.org')
+      IRkernel::installspec(user = FALSE, displayname = 'R ({{ jupyterhub_r_conda_env }})')
+    "
+  args:
+    creates: /usr/local/share/jupyter/kernels/ir
+  when:
+    - jupyterhub_install_r_kernel
+    - r_env_exists.stat.exists | default(false)
+
+# ============================================================
+# 9. Ensure JupyterHub is running
+# ============================================================
+- name: Ensure JupyterHub is started and enabled
+  ansible.builtin.service:
+    name: jupyterhub
+    state: started
+    enabled: true

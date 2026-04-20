@@ -1,0 +1,5 @@
+---
+jupyterhub_bind_url: "http://:8000/jupyter"
+jupyterhub_base_url: /jupyter
+jupyterhub_install_r_kernel: true
+jupyterhub_r_conda_env: rstudio-server

@@ -8,13 +8,13 @@ Wants=network-online.target
 Type=simple
 ExecStart={{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}/bin/jupyterhub \
   -f {{ jupyterhub_install_dir }}/etc/jupyterhub_config.py
+ExecStopPost=/bin/bash -c 'pkill -f configurable-http-proxy || true'
 WorkingDirectory={{ jupyterhub_state_dir }}
 Restart=on-failure
 RestartSec=10
-
-# Security hardening
-NoNewPrivileges=false
-ProtectSystem=false
+KillMode=control-group
+KillSignal=SIGTERM
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

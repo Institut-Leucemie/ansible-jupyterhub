@@ -34,5 +34,5 @@ jupyterhub_r_packages:
 
 # === Default spawner ===
 # === Default spawner ===
-jupyterhub_spawner: LocalProcessSpawner
-jupyterhub_spawner_default_interface: /lab    # /lab = JupyterLab, /tree = Notebook classique
+jupyterhub_spawner: jupyterhub.spawner.LocalProcessSpawner
+jupyterhub_spawner_default_interface: /lab  # /lab = JupyterLab, /tree = Notebook classique

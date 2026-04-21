@@ -13,7 +13,6 @@ c.Spawner.cmd = ['{{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}/bi
 # === State ===
 c.JupyterHub.db_url = 'sqlite:///{{ jupyterhub_state_dir }}/jupyterhub.sqlite'
 c.JupyterHub.cookie_secret_file = '{{ jupyterhub_state_dir }}/jupyterhub_cookie_secret'
-c.JupyterHub.pid_file = '{{ jupyterhub_state_dir }}/jupyterhub-proxy.pid'
 
 # === Idle culler ===
 c.JupyterHub.services = [

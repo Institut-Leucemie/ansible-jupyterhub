@@ -139,6 +139,8 @@
 - name: Register R kernel for JupyterHub
   ansible.builtin.shell: |
     {{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}/bin/R -e "IRkernel::installspec(user = FALSE, displayname = 'R')"
+  environment:
+    PATH: "{{ miniforge_install_dir }}/envs/{{ jupyterhub_conda_env }}/bin:{{ ansible_env.PATH }}"
   args:
     creates: /usr/local/share/jupyter/kernels/ir
   when: jupyterhub_install_r_kernel

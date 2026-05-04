@@ -39,6 +39,11 @@
 # ============================================================
 # 2. configurable-http-proxy
 # ============================================================
+- name: Install npm
+  ansible.builtin.apt:
+    name: npm
+    state: present
+
 - name: Install configurable-http-proxy
   ansible.builtin.command:
     cmd: npm install -g configurable-http-proxy

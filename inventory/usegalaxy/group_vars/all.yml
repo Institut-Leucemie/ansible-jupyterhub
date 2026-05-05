@@ -5,3 +5,9 @@ jupyterhub_install_r_kernel: true
 jupyterhub_r_conda_env: rstudio-server
 
 miniforge_install_dir: /opt/rstudio-server_miniforge
+
+jupyterhub_conda_packages:
+  - jupyterhub=5.4.4
+  - jupyterlab
+  - jupyterhub-idle-culler
+  - irkernel
